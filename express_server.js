@@ -7,8 +7,15 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Add a '/' route sending out Hello! response
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.end("Hello!");
+});
+
+
+// Add a '/urls.json' to display the urlDatabase in JSON format
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
