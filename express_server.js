@@ -13,8 +13,9 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Generate a random shortURL
 function generateRandomString() {
-
+  return Math.random().toString(36).slice(6);
 }
 
 // Add a '/' route sending out Hello! response
