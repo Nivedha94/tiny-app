@@ -32,6 +32,11 @@ app.get('/urls', (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Route to render the urls_new template
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 //Route to render the urls_show template
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
