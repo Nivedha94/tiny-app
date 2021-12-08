@@ -107,6 +107,12 @@ app.post("/login", (req, res) => {
   res.redirect('/urls');
 });
 
+//POST route to clear already set username cookie while logging out
+app.post("/logout", (req, res) => {
+  res.clearCookie('username'); //clears the username cookie
+  res.redirect('/urls');
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
