@@ -46,14 +46,29 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  let shortURL = generateRandomString();
+  urlDatabase = {shortURL: urlDatabase[shortURL]};
+  res.statusCode = 200;
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  res.redirect("/urls/:shortURL");   //redirect the user to a new page
 });
 
 //Route to render the urls_show template
 app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render('urls_show', templateVars);
+});
+
+//Route to redirect to longURL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDataba[shortURL];
+    if (longURL) {
+      res.redirect(longURL);
+    } else {
+      res
+        .status(404)
+        .send({ message: "long url not found for the given short url" });
+    }
 });
 
 app.listen(PORT, () => {
