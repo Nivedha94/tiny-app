@@ -41,7 +41,7 @@ app.get("/hello", (req, res) => {
 app.get('/urls', (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
   };
   res.render("urls_index", templateVars);
 });
@@ -49,7 +49,7 @@ app.get('/urls', (req, res) => {
 //Route to render the urls_new template
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
   };
   res.render("urls_new", templateVars);
 });
@@ -66,7 +66,7 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
   };
   res.render('urls_show', templateVars);
 });
