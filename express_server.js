@@ -126,6 +126,13 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
+// GET the login page using GET /login endpoint
+app.get("/login", (req, res) => {
+  let templateVars = {
+    user: users[req.cookies["user_id"]],
+  } // pass the entire user object to the template instead of passing the username
+  res.render('login', templateVars);
+})
 //POST route to login, sets a cookie with submitted username
 app.post("/login", (req, res) => {
   const username = req.body.username;
