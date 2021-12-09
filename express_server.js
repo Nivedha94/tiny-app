@@ -64,7 +64,8 @@ app.get("/hello", (req, res) => {
 app.get('/urls', (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   res.render("urls_index", templateVars);
 });
@@ -72,7 +73,8 @@ app.get('/urls', (req, res) => {
 //Route to render the urls_new template
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   res.render("urls_new", templateVars);
 });
@@ -89,7 +91,8 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   res.render('urls_show', templateVars);
 });
@@ -139,14 +142,15 @@ app.post("/logout", (req, res) => {
 //GET the registeration page using GET /register endpoint
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   res.render('register', templateVars);
 });
 
 //POST route to handle the user registration
 app.post("/register", (req, res) => {
-  
+  const newUserID = generateRandomString();
   const submittedEmail = req.body.email;
   const submittedPassword = req.body.password;
 
@@ -155,7 +159,6 @@ app.post("/register", (req, res) => {
   } else if (emailAlreadyExists(submittedEmail)) {
     res.send(400, "An account already exists for this email address");
   } else {
-    let newUserID = generateRandomString();
     //add a new user object to the global users object
     users[newUserID] = {
       id: newUserID,
@@ -163,11 +166,11 @@ app.post("/register", (req, res) => {
       password: submittedPassword
     };
 
+    console.log(users);
     //set a cookie
     res.cookie('user_id', newUserID);
-
     //redirect to urls page
-    res.redirect = ('/urls');
+    res.redirect('/urls');
   }
 
 });
