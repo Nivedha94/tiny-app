@@ -15,7 +15,7 @@ app.use(cookieParser());
 const emailAlreadyExists = function(email) {
   for (const user in users) {
     if (users[user].email === email) {
-      return true
+      return users[user].id;
     }
   } return false;
 };
@@ -133,16 +133,28 @@ app.get("/login", (req, res) => {
   } // pass the entire user object to the template instead of passing the username
   res.render('login', templateVars);
 })
+
 //POST route to login, sets a cookie with submitted username
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!emailAlreadyExists(email)) {
+    res.send(403, "There is no account associated with this email address");
+  } else {
+    const userID = emailAlreadyExists(email);
+    if (users[userID].password !== password) {
+      res.send(403, "The password you entered does not match the one associated with the provided email address");
+    } else {
+      res.cookie('user_id', userID);
+      res.redirect("/urls");
+    }
+  }
 });
 
 //POST route to clear already set username cookie while logging out
 app.post("/logout", (req, res) => {
-  res.clearCookie('username'); //clears the username cookie
+  res.clearCookie('user_id'); //clears the user_id cookie
   res.redirect('/urls');
 });
 
