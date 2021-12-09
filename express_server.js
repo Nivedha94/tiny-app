@@ -155,7 +155,7 @@ app.post("/register", (req, res) => {
   } else if (emailAlreadyExists(submittedEmail)) {
     res.send(400, "An account already exists for this email address");
   } else {
-    const newUserID = generateRandomString();
+    let newUserID = generateRandomString();
     //add a new user object to the global users object
     users[newUserID] = {
       id: newUserID,
