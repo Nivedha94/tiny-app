@@ -11,10 +11,33 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+//email validation for registration route
+const emailAlreadyExists = function(email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true
+    }
+  } return false;
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+//Global users object to store and access the users in the app
+let users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 //Generate a random shortURL
 function generateRandomString() {
@@ -123,6 +146,29 @@ app.get("/register", (req, res) => {
 
 //POST route to handle the user registration
 app.post("/register", (req, res) => {
+  
+  const submittedEmail = req.body.email;
+  const submittedPassword = req.body.password;
+
+  if (!submittedEmail || !submittedPassword) {
+    res.send(400, "Please include both a valid email and password");
+  } else if (emailAlreadyExists(submittedEmail)) {
+    res.send(400, "An account already exists for this email address");
+  } else {
+    const newUserID = generateRandomString();
+    //add a new user object to the global users object
+    users[newUserID] = {
+      id: newUserID,
+      email: submittedEmail,
+      password: submittedPassword
+    };
+
+    //set a cookie
+    res.cookie('user_id', newUserID);
+
+    //redirect to urls page
+    res.redirect = ('/urls');
+  }
 
 });
 
