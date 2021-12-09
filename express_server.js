@@ -113,6 +113,19 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+//GET the registeration page using GET /register endpoint
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+  };
+  res.render('register', templateVars);
+});
+
+//POST route to handle the user registration
+app.post("/register", (req, res) => {
+
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
