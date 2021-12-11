@@ -8,8 +8,11 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: session,
+  keys: ['Nivedha'],
+}));
 
 const bcrypt = require('bcryptjs');
 
@@ -82,8 +85,8 @@ app.get("/hello", (req, res) => {
 //Route to render the urls_index template
 app.get('/urls', (req, res) => {
   let templateVars = {
-    urls: urlsForUser(req.cookies["user_id"]),//passing the current user_id value to the db
-    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
+    urls: urlsForUser(req.session.user_id),//passing the current user_id value to the db
+    user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
   res.render("urls_index", templateVars);
 });
@@ -91,9 +94,9 @@ app.get('/urls', (req, res) => {
 //Route to render the urls_new template
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
+    user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     res.redirect('/login');
   }
   res.render("urls_new", templateVars);
@@ -103,7 +106,7 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies["user_id"],
+    userID: req.session.user_id,
     }
   res.statusCode = 200;
   res.redirect(`/urls/${shortURL}`);   //redirect the user to a new page
@@ -116,7 +119,7 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
     urlUserID: urlDatabase[req.params.shortURL].userID, //current userID
     // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
-    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
+    user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
   res.render('urls_show', templateVars);
 });
@@ -139,7 +142,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 //route to remove a URL
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const userUrls = urlsForUser(userID);
   if (Object.keys(userUrls).includes(req.params.shortURL)) {
     const shortURL = req.params.shortURL;
@@ -152,7 +155,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //POST route to update a URL resource
 app.post("/urls/:id", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session.user_id;
   const userUrls = urlsForUser(userID);
   if (Object.keys(userUrls).includes(req.params.id)) {
     const shortURL = req.params.id;
@@ -166,7 +169,7 @@ app.post("/urls/:id", (req, res) => {
 // GET the login page using GET /login endpoint
 app.get("/login", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]],
+    user: users[req.session.user_id],
   } // pass the entire user object to the template instead of passing the username
   res.render('login', templateVars);
 })
@@ -184,7 +187,7 @@ app.post("/login", (req, res) => {
     if (!bcrypt.compareSync(password, users[userID].password)) {
       res.send(403, "The password you entered does not match the one associated with the provided email address");
     } else {
-      res.cookie('user_id', userID);
+      req.session.user_id = userID;
       res.redirect("/urls");
     }
   }
@@ -192,7 +195,7 @@ app.post("/login", (req, res) => {
 
 //POST route to clear already set username cookie while logging out
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id'); //clears the user_id cookie
+  req.session = null; //clears the user_id cookie
   res.redirect('/urls');
 });
 
@@ -200,7 +203,7 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = {
     // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
-    user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
+    user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
   res.render('register', templateVars);
 });
@@ -227,7 +230,7 @@ app.post("/register", (req, res) => {
 
     console.log(users);
     //set a cookie
-    res.cookie('user_id', newUserID);
+    req.session.user_id = newUserID;
     //redirect to urls page
     res.redirect('/urls');
   }
