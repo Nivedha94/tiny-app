@@ -11,6 +11,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+const bcrypt = require('bcryptjs');
+
 //email validation for registration route
 const emailAlreadyExists = function(email) {
   for (const user in users) {
@@ -178,7 +180,8 @@ app.post("/login", (req, res) => {
     res.send(403, "There is no account associated with this email address");
   } else {
     const userID = emailAlreadyExists(email);
-    if (users[userID].password !== password) {
+    //Use bcrypt when checking passwords
+    if (!bcrypt.compareSync(password, users[userID].password)) {
       res.send(403, "The password you entered does not match the one associated with the provided email address");
     } else {
       res.cookie('user_id', userID);
@@ -207,6 +210,8 @@ app.post("/register", (req, res) => {
   const newUserID = generateRandomString();
   const submittedEmail = req.body.email;
   const submittedPassword = req.body.password;
+  //use bcryptjs to hash when hashing passwords
+  const hashedPassword = bcrypt.hashSync(submittedPassword, 10);
 
   if (!submittedEmail || !submittedPassword) {
     res.send(400, "Please include both a valid email and password");
