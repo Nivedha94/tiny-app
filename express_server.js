@@ -80,8 +80,7 @@ app.get("/hello", (req, res) => {
 //Route to render the urls_index template
 app.get('/urls', (req, res) => {
   let templateVars = {
-    urls: urlDatabase,
-    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+    urls: urlsForUser(req.cookies["user_id"]),//passing the current user_id value to the db
     user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   res.render("urls_index", templateVars);
@@ -90,7 +89,6 @@ app.get('/urls', (req, res) => {
 //Route to render the urls_new template
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
     user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
   if (!req.cookies["user_id"]) {
@@ -114,6 +112,7 @@ app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
+    urlUserID: urlDatabase[req.params.shortURL].userID, //current userID
     // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
     user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
