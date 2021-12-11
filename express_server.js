@@ -20,12 +20,23 @@ const emailAlreadyExists = function(email) {
   } return false;
 };
 
+/* Returns an object of URLs specific to the argument userID */
+const urlsForUser = function(id) {
+  const userUrls = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  } 
+  return userUrls;
+};
+
 const urlDatabase = {
-  b6UTxQ: {
+  "b6UTxQ": {
       longURL: "https://www.tsn.ca",
       userID: "aJ48lW"
   },
-  i3BoGr: {
+  "i3BoGr": {
       longURL: "https://www.google.ca",
       userID: "aJ48lW"
   }
@@ -102,7 +113,7 @@ app.post("/urls", (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[shortURL].longURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
     // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
     user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
@@ -114,7 +125,7 @@ app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   if (shortURL) {
     //get the long url for the short url s
-    const longURL = urlDatabase[shortURL].longURL;
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     if (longURL) {
       res.redirect(longURL);
     } else {
