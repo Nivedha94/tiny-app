@@ -76,6 +76,9 @@ app.get("/urls/new", (req, res) => {
     // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
     user: users[req.cookies["user_id"]], // pass the entire user object to the template instead of passing the username
   };
+  if (!req.cookies["user_id"]) {
+    res.redirect('/login');
+  }
   res.render("urls_new", templateVars);
 });
 
