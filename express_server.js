@@ -1,20 +1,20 @@
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcryptjs');
 const PORT = 3000; // default port 3000
 
 // set the view engine to ejs
 app.set("view engine", "ejs");
 
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-const cookieSession = require('cookie-session');
 app.use(cookieSession({
-  name: session,
+  name: 'session',
   keys: ['Nivedha'],
 }));
 
-const bcrypt = require('bcryptjs');
 
 //email validation for registration route
 const emailAlreadyExists = function(email) {
@@ -25,7 +25,7 @@ const emailAlreadyExists = function(email) {
   } return false;
 };
 
-/* Returns an object of URLs specific to the argument userID */
+//Returns an object of URLs specific to the argument userID 
 const urlsForUser = function(id) {
   const userUrls = {};
   for (const shortURL in urlDatabase) {
@@ -35,6 +35,16 @@ const urlsForUser = function(id) {
   } 
   return userUrls;
 };
+
+//Checks if current cookie corresponds with a user in the userDatabase 
+const cookieHasUser = function (cookie, userDatabase) {
+  for (const user in userDatabase) {
+    if (cookie === user) {
+      return true;
+    }
+  } return false;
+}
+
 
 const urlDatabase = {
   "b6UTxQ": {
@@ -103,13 +113,16 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID: req.session.user_id,
-    }
-  res.statusCode = 200;
-  res.redirect(`/urls/${shortURL}`);   //redirect the user to a new page
+  if (req.session.user_id) {
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      userID: req.session.user_id,
+    };
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(401).send("You must be logged in to a valid account to create short URLs.");
+  }
 });
 
 //Route to render the urls_show template
@@ -168,11 +181,15 @@ app.post("/urls/:id", (req, res) => {
 
 // GET the login page using GET /login endpoint
 app.get("/login", (req, res) => {
-  let templateVars = {
+  if (cookieHasUser(req.session.user_id, users)) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
     user: users[req.session.user_id],
-  } // pass the entire user object to the template instead of passing the username
-  res.render('login', templateVars);
-})
+    } // pass the entire user object to the template instead of passing the username
+    res.render('login', templateVars);
+  }
+});
 
 //POST route to login, sets a cookie with submitted username
 app.post("/login", (req, res) => {
@@ -184,8 +201,8 @@ app.post("/login", (req, res) => {
   } else {
     const userID = emailAlreadyExists(email);
     //Use bcrypt when checking passwords
-    if (!bcrypt.compareSync(password, users[userID].password)) {
-      res.send(403, "The password you entered does not match the one associated with the provided email address");
+    if (bcrypt.compareSync(password, users[userID].password)) {
+      res.status(403).send("The password you entered does not match the one associated with the provided email address");
     } else {
       req.session.user_id = userID;
       res.redirect("/urls");
@@ -201,11 +218,14 @@ app.post("/logout", (req, res) => {
 
 //GET the registeration page using GET /register endpoint
 app.get("/register", (req, res) => {
-  let templateVars = {
-    // username: req.cookies["username"], // Pass username value to all the templates that has _header.ejs file included
+  if (cookieHasUser(req.session.user_id, users)) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
     user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
-  };
-  res.render('register', templateVars);
+   };
+   res.render('register', templateVars);
+  }
 });
 
 //POST route to handle the user registration
