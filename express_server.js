@@ -16,14 +16,25 @@ app.use(cookieSession({
 }));
 
 
-//email validation for registration route
-const emailAlreadyExists = function(email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user].id;
+//Checks if given email corresponds to a user in a given database, returns true or false 
+const emailHasUser = function(email, userDatabase) {
+  for (const user in userDatabase) {
+    if (userDatabase[user].email === email) {
+      return true;
     }
-  } return false;
+  }
+  return false;
 };
+
+//Takes an email and userDatabase and returns the user ID for the user with the given email address 
+const userIdFromEmail = function(email, userDatabase) {
+  for (const user in userDatabase) {
+    if (userDatabase[user].email === email) {
+      return userDatabase[user].id;
+    }
+  }
+};
+
 
 //Returns an object of URLs specific to the argument userID 
 const urlsForUser = function(id) {
@@ -196,10 +207,10 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if (!emailAlreadyExists(email)) {
+  if (!emailHasUser(email, users)) {
     res.send(403, "There is no account associated with this email address");
   } else {
-    const userID = emailAlreadyExists(email);
+    const userID = userIdFromEmail(email, users);
     //Use bcrypt when checking passwords
     if (bcrypt.compareSync(password, users[userID].password)) {
       res.status(403).send("The password you entered does not match the one associated with the provided email address");
@@ -238,7 +249,7 @@ app.post("/register", (req, res) => {
 
   if (!submittedEmail || !submittedPassword) {
     res.send(400, "Please include both a valid email and password");
-  } else if (emailAlreadyExists(submittedEmail)) {
+  } else if (emailHasUser(submittedEmail, users)) {
     res.send(400, "An account already exists for this email address");
   } else {
     //add a new user object to the global users object
