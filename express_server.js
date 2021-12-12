@@ -106,7 +106,7 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
-  if (!req.session.user_id) {
+  if (!cookieHasUser(req.session.user_id, users)) {
     res.redirect('/login');
   }
   res.render("urls_new", templateVars);
