@@ -37,7 +37,7 @@ const userIdFromEmail = function(email, userDatabase) {
 
 
 //Returns an object of URLs specific to the argument userID 
-const urlsForUser = function(id) {
+const urlsForUser = function(id, urlDatabase) {
   const userUrls = {};
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
@@ -106,7 +106,7 @@ app.get("/hello", (req, res) => {
 //Route to render the urls_index template
 app.get('/urls', (req, res) => {
   let templateVars = {
-    urls: urlsForUser(req.session.user_id),//passing the current user_id value to the db
+    urls: urlsForUser(req.session.user_id, urlDatabase),//passing the current user_id value to the db
     user: users[req.session.user_id], // pass the entire user object to the template instead of passing the username
   };
   res.render("urls_index", templateVars);
@@ -167,7 +167,7 @@ app.get("/u/:shortURL", (req, res) => {
 //route to remove a URL
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
-  const userUrls = urlsForUser(userID);
+  const userUrls = urlsForUser(userID, urlDatabase);
   if (Object.keys(userUrls).includes(req.params.shortURL)) {
     const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
@@ -180,7 +180,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //POST route to update a URL resource
 app.post("/urls/:id", (req, res) => {
   const userID = req.session.user_id;
-  const userUrls = urlsForUser(userID);
+  const userUrls = urlsForUser(userID, urlDatabase);
   if (Object.keys(userUrls).includes(req.params.id)) {
     const shortURL = req.params.id;
     urlDatabase[shortURL].longURL = req.body.newURL;
