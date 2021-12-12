@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const PORT = 3000; // default port 3000
+const PORT = 8080; // default port 8080
 
 // set the view engine to ejs
 app.set("view engine", "ejs");
@@ -16,7 +16,7 @@ app.use(cookieSession({
 }));
 
 // 
-const { generateRandomString, emailHasUser, userIdFromEmail, urlsForUser, cookieHasUser } = require("./helpers");
+const { generateRandomString, emailHasUser, userIdFromEmail, urlsForUser, cookieHasUser, getUserByEmail } = require("./helpers");
 
 const urlDatabase = {
   "b6UTxQ": {
@@ -34,19 +34,23 @@ let users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   }
 }
 
 
 // Add a '/' route sending out Hello! response
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  if (cookieHasUser(req.session.user_id, users)) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 
@@ -165,11 +169,12 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
   if (!emailHasUser(email, users)) {
-    res.send(403, "There is no account associated with this email address");
+    res.status(403).send("There is no account associated with this email address");
   } else {
     const userID = userIdFromEmail(email, users);
-    //Use bcrypt when checking passwords
-    if (bcrypt.compareSync(password, users[userID].password)) {
+    console.log(password);
+    console.log(users[userID].password);
+    if (!bcrypt.compareSync(password, users[userID].password)) {
       res.status(403).send("The password you entered does not match the one associated with the provided email address");
     } else {
       req.session.user_id = userID;
@@ -177,6 +182,7 @@ app.post("/login", (req, res) => {
     }
   }
 });
+  
 
 //POST route to clear already set username cookie while logging out
 app.post("/logout", (req, res) => {
