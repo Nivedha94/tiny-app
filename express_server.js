@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const PORT = 8080; // default port 3000
+const PORT = 3000; // default port 3000
 
 // set the view engine to ejs
 app.set("view engine", "ejs");
