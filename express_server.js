@@ -91,7 +91,8 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: req.session.user_id,
     };
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect('/urls');
+    // res.redirect(`/urls/${shortURL}`);
   } else {
     res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
